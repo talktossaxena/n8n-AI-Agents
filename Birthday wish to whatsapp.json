@@ -1,0 +1,311 @@
+{
+  "name": "Birthday wish to whatsapp",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -896,
+        32
+      ],
+      "id": "a2157870-cb23-442d-9297-006b204c2be5",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1eZ3QrbnRDRWf_Me9GxMNkFmnCqn7gIOqc-O6do6IWG8",
+          "mode": "list",
+          "cachedResultName": "birthdays",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eZ3QrbnRDRWf_Me9GxMNkFmnCqn7gIOqc-O6do6IWG8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "birthday",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -672,
+        32
+      ],
+      "id": "ee9260d5-7f21-4611-b1c4-8e91f276bf6e",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "PvlAb0as7X6NP09o",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "bb969915-cc41-4d81-89b1-e8110da51447",
+              "leftValue": "={{ $json.DATE.substring(0, 5) }}",
+              "rightValue": "={{ $now.toFormat('dd-MM') }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -448,
+        32
+      ],
+      "id": "e5c8cc3f-c1df-42ec-bb91-d9f30b33cf8b",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -224,
+        32
+      ],
+      "id": "bce5bc1c-9b0d-4827-9933-65868f581243",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "claude-opus-4-7",
+          "mode": "list",
+          "cachedResultName": "Claude Opus 4.7"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        80,
+        128
+      ],
+      "id": "fe1bf4dc-d001-462e-9f2a-213271b418e9",
+      "name": "Email Subject LLM",
+      "credentials": {
+        "anthropicApi": {
+          "id": "E0I8e6DJZvFdAvyt",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Generate a single and simple birthday wish body (with emojies) without any extra details",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        352,
+        -96
+      ],
+      "id": "cf5d2351-8e44-400d-8d2b-458dcda26e04",
+      "name": "Email Body"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "claude-opus-4-7",
+          "mode": "list",
+          "cachedResultName": "Claude Opus 4.7"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        432,
+        128
+      ],
+      "id": "9f4f528f-64dc-46dd-be1a-ee712d2972ad",
+      "name": "Email Body LLM",
+      "credentials": {
+        "anthropicApi": {
+          "id": "E0I8e6DJZvFdAvyt",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "phoneNumberId": "1158645677323192",
+        "recipientPhoneNumber": "=+91{{ $('Filter').item.json['WHATSAPP NUMBER'] }}",
+        "template": "hello_world|en_US"
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        704,
+        32
+      ],
+      "id": "48a57efc-9287-450d-b3c9-9f79e8d1bddf",
+      "name": "Send template",
+      "webhookId": "c11d1e83-9ced-42fd-8e64-13f163caa016",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "gQSR8Js6RluCPJlF",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Generate a single and simple Cake Image without any extra details",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        0,
+        -96
+      ],
+      "id": "dacb4eab-860e-4c5d-a9eb-170bca5ee748",
+      "name": "Cake Image"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Cake Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Subject LLM": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Cake Image",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Body": {
+      "main": [
+        [
+          {
+            "node": "Send template",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Body LLM": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Email Body",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send template": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cake Image": {
+      "main": [
+        [
+          {
+            "node": "Email Body",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "4196c661-8165-4e1c-b77c-859f68c01c75",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0bfd49b9dfb2ecb86163029d5744c012eeee5f1a722ee7a8664688227997365b"
+  },
+  "id": "UzYzS686qEfldgya",
+  "tags": []
+}
