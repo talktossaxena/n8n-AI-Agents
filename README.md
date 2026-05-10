@@ -80,3 +80,27 @@
     For "List" actions, the workflow skips file saving and triggers sub-workflows that retrieve data from Zabbix and likely email a report back to the user.
 
 <img width="372" height="402" alt="image" src="https://github.com/user-attachments/assets/fc63122f-2ea7-4e21-bed1-f0cb8c2a582f" />
+
+# 🛰️ Zabbix - List WEB Monitors
+
+### 🛠️ **How it works**
+
+1.  🏁 **Trigger (Parent Workflow):** 
+    This workflow is called by a "Parent" process that passes in an **Application Name** and an **Email ID**.
+2.  🔡 **Name Variation Generator:** 
+    Using a custom JavaScript node, it creates every possible case combination (UPPER, lower, Title Case, etc.) for the application name. This ensures that even if Zabbix has inconsistent naming (e.g., "App-One" vs "APP-ONE"), the workflow will find it.
+3.  📡 **Multi-Stage Zabbix API Fetch:**
+    *   **Host Get:** Searches Zabbix for hosts tagged with those application name variations.
+    *   **HTTPTESTs Get:** For every host found, it retrieves all configured **Web Scenarios** (monitors), including steps, URLs, and retry settings.
+    *   **Items & Triggers Get:** It goes even deeper to find the current **Last Value** (status) and the specific **Trigger Expressions** (the "alert rules") linked to those web monitors.
+4.  📝 **Deep Data Formatting:** 
+    The **Update Column Name** node contains complex logic to transform raw Zabbix JSON into a readable summary. It extracts:
+    *   **Web Steps:** Details on every URL step (Timeout, Status Codes, POST data).
+    *   **Triggers:** The severity and status of the alerts.
+    *   **Tags:** Any metadata attached to the monitor.
+5.  📊 **Excel Generation:** 
+    All this data is flattened into a professional `.xlsx` file. The filename is dynamically set to the `Application Name`.
+6.  ✉️ **Email Delivery:** 
+    The Excel report is emailed to the requester and the Zabbix admin simultaneously.
+
+<img width="997" height="148" alt="image" src="https://github.com/user-attachments/assets/0d49569a-c579-4ec8-92a3-f97bac6ec661" />
