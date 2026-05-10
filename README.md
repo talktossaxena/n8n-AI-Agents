@@ -46,6 +46,21 @@
 
 <img width="894" height="305" alt="image" src="https://github.com/user-attachments/assets/792d7780-9fc8-4406-9f75-67af01c4e84d" />
 
+# 📑 Zabbix Host List Exporter
+
+### 🛠️ **How it works**
+
+1.  🏁 **Trigger:** The workflow is started manually by clicking the **"Execute workflow"** button.
+2.  📡 **API Fetch (List Zabbix Hosts):** It makes a `POST` request to your Zabbix API using JSON-RPC. It specifically asks for a list of all hosts currently configured in your system.
+3.  ✂️ **Data Extraction (Hosts Split):** The API response usually comes back as one large object. This node "splits" that data so every individual host becomes its own separate item.
+4.  ✏️ **Formatting (Update Column Names):** This node renames the raw technical fields from Zabbix to make them human-readable:
+    *   `host` becomes **Host Name**
+    *   `hostid` becomes **Host ID**
+5.  📊 **File Creation:** it takes that cleaned list and converts it into a **.xlsx (Excel)** file named "Zabbix Hosts.xlsx."
+6.  ✉️ **Email Delivery:** Finally, it sends an email to a specific admin address with the **Excel file attached**.
+
+<img width="1043" height="151" alt="image" src="https://github.com/user-attachments/assets/f556e6cd-fcb9-49be-8b5b-a680b7d10946" />
+
 # 🛰️ Zabbix Monitoring Management
 
 ### 🛠️ **How it works**
@@ -65,18 +80,3 @@
     For "List" actions, the workflow skips file saving and triggers sub-workflows that retrieve data from Zabbix and likely email a report back to the user.
 
 <img width="372" height="402" alt="image" src="https://github.com/user-attachments/assets/fc63122f-2ea7-4e21-bed1-f0cb8c2a582f" />
-
-# 📑 Zabbix Host List Exporter
-
-### 🛠️ **How it works**
-
-1.  🏁 **Trigger:** The workflow is started manually by clicking the **"Execute workflow"** button.
-2.  📡 **API Fetch (List Zabbix Hosts):** It makes a `POST` request to your Zabbix API using JSON-RPC. It specifically asks for a list of all hosts currently configured in your system.
-3.  ✂️ **Data Extraction (Hosts Split):** The API response usually comes back as one large object. This node "splits" that data so every individual host becomes its own separate item.
-4.  ✏️ **Formatting (Update Column Names):** This node renames the raw technical fields from Zabbix to make them human-readable:
-    *   `host` becomes **Host Name**
-    *   `hostid` becomes **Host ID**
-5.  📊 **File Creation:** it takes that cleaned list and converts it into a **.xlsx (Excel)** file named "Zabbix Hosts.xlsx."
-6.  ✉️ **Email Delivery:** Finally, it sends an email to a specific admin address with the **Excel file attached**.
-
-<img width="1043" height="151" alt="image" src="https://github.com/user-attachments/assets/f556e6cd-fcb9-49be-8b5b-a680b7d10946" />
