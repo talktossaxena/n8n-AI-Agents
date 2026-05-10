@@ -12,17 +12,16 @@
 <img width="928" height="176" alt="image" src="https://github.com/user-attachments/assets/6156eded-24cd-46bc-8fd8-7a69bbb2d6bb" />
 
 
-# 📱 Birthday Wish to Whatsapp Automation
+# 🎂 Birthday Wish to WhatsApp Automation
 
-### 🛠️ **Workflow Breakdown**
+### 🛠️ **How it currently works**
 
-*   🚀 **Manual Trigger:** The process starts when you click "Execute workflow."
-*   📊 **Google Sheets:** It fetches contact data (names, dates, and phone numbers) from your "birthdays" spreadsheet.
-*   🔍 **Date Filter:** It isolates rows where the date matches **today** (`dd-MM`).
-*   🔄 **Looping:** It cycles through each person found by the filter.
-*   🎂 **AI Cake Generation:** It uses **Claude Opus 4.7** to "generate" a description or prompt for a cake image (labeled as the "Cake Image" node).
-*   ✍️ **AI Message Body:** A second AI call crafts a simple, emoji-filled birthday message.
-*   💬 **WhatsApp Send:** It uses the **WhatsApp Business API** to send a pre-approved template (`hello_world`) to the recipient's phone number.
+*   🚀 **Trigger:** You manually start the workflow by clicking 'Execute'.
+*   📊 **Fetch Data:** It pulls your birthday list from a specific **Google Sheet**.
+*   🔍 **Filter:** It checks if the first 5 characters of the date in your sheet match **today’s date** (`dd-MM`).
+*   🔄 **Loop:** It processes every person celebrating a birthday today, one by one.
+*   🤖 **AI Generation:** It uses **Claude Opus 4.7** to craft a fresh, unique email message for every recipient.
+*   📧 **Send:** It delivers the final message through **WhatsApp**, automatically pairing the recipient's name with the AI's creativity.
 
 <img width="923" height="201" alt="image" src="https://github.com/user-attachments/assets/f857e948-d2c2-47c9-a59c-802e7039cbb1" />
 
