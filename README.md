@@ -1,8 +1,8 @@
 # 🎂 Birthday Wish to Whatsapp
 
 ## 🛠️ How it currently works
-🚀 Trigger: You manually start the workflow by clicking 'Execute'.
-📊 Fetch Data: It pulls your birthday list from a specific Google Sheet.
+*🚀 Trigger: You manually start the workflow by clicking 'Execute'.
+*📊 Fetch Data: It pulls your birthday list from a specific Google Sheet.
 🔍 Filter: It checks if the first 5 characters of the date in your sheet match today’s date (dd-MM).
 🔄 Loop: It processes every person celebrating a birthday today, one by one.
 🤖 AI Generation: It uses Claude Opus 4.7 to craft a fresh, unique whatsapp message for every recipient.
