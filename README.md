@@ -46,3 +46,20 @@
 
 <img width="894" height="305" alt="image" src="https://github.com/user-attachments/assets/792d7780-9fc8-4406-9f75-67af01c4e84d" />
 
+# 🛰️ Zabbix Monitoring Management
+
+### 🛠️ **How it works**
+
+1.  🏁 **Entry Point (Form Trigger):** 
+    The workflow begins with a **Zabbix - Add / List Monitors** form. Users choose an action from a dropdown menu, such as adding a **URL**, **Port**, or **Database** (MySQL, MSSQL, Postgres, Oracle) monitor, or listing current monitors.
+2.  ⚖️ **The Switch:** 
+    A **Switch Node** routes the request to one of **eight specific paths** based on the user's selection in the first step.
+3.  📝 **Data Collection & File Handling:** 
+    *   **Sub-Forms:** For "Add" actions, a secondary form asks for details like *Application Name*, *ASK ID*, and an Excel (`.xlsx`) template file containing the monitor configurations.
+    *   **Local Storage:** The workflow saves these uploaded Excel files to a temporary disk location (`/tmp/`) to ensure the data is ready for processing.
+4.  🛡️ **Confirmation Gate:** 
+    Before changes are made, a **Switch Node** ("Create Monitors?") checks if the user selected **"Yes"** on the confirmation radio button. This prevents accidental executions.
+5.  🚀 **Execution (Sub-workflows):** 
+    If confirmed, the workflow triggers a specific **Sub-workflow** (e.g., *Add URL Monitors*) to handle the technical heavy lifting of interacting with the Zabbix API.
+6.  📋 **Listing Monitors:** 
+    For "List" actions, the workflow skips file saving and triggers sub-workflows that retrieve data from Zabbix and likely email a report back to the user.
