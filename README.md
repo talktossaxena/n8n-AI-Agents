@@ -157,190 +157,251 @@ The workflow fetches data from two distinct news providers:
 
 ## Overview
 
-This workflow automatically generates platform-specific social media content (LinkedIn, Facebook, and Blog posts) whenever a new row is added to a Google Sheet. It uses Tavily to search the web for relevant articles, aggregates the results, and passes them through Claude-powered AI agents to produce ready-to-publish content — all written back to the same spreadsheet.
+This workflow automatically generates platform-specific social media content — **LinkedIn posts**, **Facebook posts**, and **Blog articles** — whenever a new row is added to a Google Sheet. It uses the **Tavily API** to search the web for relevant articles, aggregates the results, and passes them through **Claude Haiku 4.5**-powered AI agents to produce ready-to-publish content, which is then written back into the same spreadsheet row.
 
 ---
 
-## Workflow Summary
+## Workflow at a Glance
 
 | Property | Value |
 |---|---|
-| **Workflow Name** | Social Media Content |
-| **Trigger** | Google Sheets — new row added |
-| **AI Model** | Claude Opus 4.7 (Anthropic) |
-| **Web Search** | Tavily API |
-| **Output** | LinkedIn post, Facebook post, Blog article written back to Google Sheets |
-| **Status** | Inactive (manual activation required) |
+| **Name** | Social Media Content |
+| **Trigger** | Google Sheets — new row added (polls every minute) |
+| **AI Model** | Claude Haiku 4.5 (`claude-haiku-4-5-20251001`) |
+| **Web Search** | Tavily API (`https://api.tavily.com/search`) |
+| **Output Destinations** | LinkedIn, Facebook, Blog columns in Google Sheets |
+| **Status** | Inactive (requires manual activation) |
+| **Execution Order** | v1 (sequential) |
 
 ---
 
-## Flow Diagram
+## Node Execution Flow
 
 ```
-Google Sheets Trigger
-        ↓
-Set Search Fields
-        ↓
-Search Web (Tavily API)
-        ↓
-Split Out (results)
-        ↓
-Aggregate (title + raw_content)
-        ↓
-LinkedIn Agent ──── Claude Opus 4.7
-        ↓
-Facebook Agent ──── Claude Opus 4.7
-        ↓
-Blog Post Agent ─── Claude Opus 4.7
-        ↓
-Update Row in Sheet
+┌─────────────────────────┐
+│   Google Sheets Trigger │  ← Fires on every new row added
+└────────────┬────────────┘
+             ↓
+┌────────────────────────┐
+│    Set Search Fields   │  ← Maps "Content Subject" → query
+└────────────┬───────────┘     Maps "Target Audience" → targetAudience
+             ↓
+┌────────────────────────┐
+│     Search Web         │  ← POST to Tavily API (max 3 results)
+└────────────┬───────────┘
+             ↓
+┌────────────────────────┐
+│       Split Out        │  ← Splits results array into individual items
+└────────────┬───────────┘
+             ↓
+┌────────────────────────┐
+│       Aggregate        │  ← Collects title + raw_content from all items
+└────────────┬───────────┘
+             ↓
+┌────────────────────────┐
+│    LinkedIn Agent      │  ← Claude Haiku 4.5
+└────────────┬───────────┘
+             ↓
+┌────────────────────────┐
+│    Facebook Agent      │  ← Claude Haiku 4.5
+└────────────┬───────────┘
+             ↓
+┌────────────────────────┐
+│    Blog Post Agent     │  ← Claude Haiku 4.5
+└────────────┬───────────┘
+             ↓
+┌────────────────────────┐
+│  Update Row in Sheet   │  ← Writes LinkedIn, Facebook, Blog back to sheet
+└────────────────────────┘
 ```
 
 ---
 
 ## Google Sheets Structure
 
-The workflow reads from and writes to **Sheet1** of the `Social Media Content` Google Spreadsheet.
+**Spreadsheet:** `Social Media Content`  
+**Sheet:** `Sheet1` (`gid=0`)
 
-### Input Columns (filled before trigger fires)
-
-| Column | Description |
-|---|---|
-| `Campaign` | Unique campaign identifier (used as the matching key for row updates) |
-| `Content Subject` | The topic/query used to search the web (e.g. "AI trends in healthcare") |
-| `Target Audience` | The professional audience the content is tailored for |
-
-### Output Columns (written back by the workflow)
+### Input Columns *(filled by user before trigger fires)*
 
 | Column | Description |
 |---|---|
-| `Linkdin` | Generated LinkedIn post |
-| `Facebook` | Generated Facebook post |
-| `Blog` | Generated two-paragraph blog article |
+| `Campaign` | Unique campaign name — used as the **row matching key** for updates |
+| `Content Subject` | The topic to search (e.g. `"AI in healthcare 2025"`) |
+| `Target Audience` | The intended audience (e.g. `"HR professionals"`) |
+
+### Output Columns *(written back by the workflow)*
+
+| Column | Source Node | Description |
+|---|---|---|
+| `Linkdin` | LinkedIn Agent | Generated LinkedIn post (plain text, ≤3,000 chars) |
+| `Facebook` | Facebook Agent | Generated Facebook post (short, mobile-friendly) |
+| `Blog` | Blog Post Agent | Two-paragraph blog article |
 
 ---
 
-## Node-by-Node Breakdown
+## Node Details
 
 ### 1. Google Sheets Trigger
-- **Type:** `googleSheetsTrigger`
-- **Event:** Row added (`rowAdded`)
-- **Poll Interval:** Every minute
-- **Purpose:** Monitors the spreadsheet and fires the workflow whenever a new row is detected.
+| Property | Value |
+|---|---|
+| **Node Type** | `googleSheetsTrigger` |
+| **Event** | `rowAdded` |
+| **Poll Interval** | Every minute |
+| **Credential** | Google Sheets Trigger OAuth2 |
+
+Watches the spreadsheet and triggers the workflow when a new row is detected.
 
 ---
 
 ### 2. Set Search Fields
-- **Type:** `set`
-- **Purpose:** Maps sheet columns to clean variable names for use downstream.
-- **Mappings:**
-  - `query` ← `Content Subject`
-  - `targetAudience` ← `Target Audience`
+| Property | Value |
+|---|---|
+| **Node Type** | `set` (v3.4) |
+
+Maps raw spreadsheet column names to clean variables:
+
+| Output Variable | Source Column |
+|---|---|
+| `query` | `Content Subject` |
+| `targetAudience` | `Target Audience` |
 
 ---
 
 ### 3. Search Web
-- **Type:** `httpRequest` (POST)
-- **Endpoint:** `https://api.tavily.com/search`
-- **Purpose:** Searches the web using the content subject as the query.
-- **Tavily Parameters:**
+| Property | Value |
+|---|---|
+| **Node Type** | `httpRequest` (v4.4) |
+| **Method** | POST |
+| **Endpoint** | `https://api.tavily.com/search` |
+
+**Tavily Request Parameters:**
 
 | Parameter | Value |
 |---|---|
+| `query` | `{{ $json.query }}` (from Set Search Fields) |
 | `search_depth` | `basic` |
 | `topic` | `news` |
 | `include_answer` | `true` |
 | `include_raw_content` | `true` |
 | `max_results` | `3` |
 
+> ⚠️ **Security:** The Tavily API key is currently hardcoded in the request body. Move it to an n8n credential or environment variable before deploying to production.
+
 ---
 
 ### 4. Split Out
-- **Type:** `splitOut`
-- **Field:** `results`
-- **Purpose:** Splits Tavily's array of results into individual items for processing.
+| Property | Value |
+|---|---|
+| **Node Type** | `splitOut` |
+| **Field** | `results` |
+
+Splits Tavily's `results` array into individual items so each article can be processed separately before aggregation.
 
 ---
 
 ### 5. Aggregate
-- **Type:** `aggregate`
-- **Fields collected:** `title`, `raw_content`
-- **Purpose:** Merges all split result items back into a single object containing all article titles and raw content, ready to pass to the AI agents.
+| Property | Value |
+|---|---|
+| **Node Type** | `aggregate` |
+| **Mode** | Aggregate all item data |
+| **Fields Collected** | `title`, `raw_content` |
+
+Merges all split result items into a single JSON object passed to the AI agents.
 
 ---
 
 ### 6. LinkedIn Agent
-- **Type:** `agent` (LangChain)
-- **AI Model:** Claude Opus 4.7
-- **Input:** Aggregated article content + target audience
-- **Output field:** `output` → written to `Linkdin` column
+| Property | Value |
+|---|---|
+| **Node Type** | `agent` (LangChain, v3.1) |
+| **Model** | Claude Haiku 4.5 |
+| **Output** | `$('Linkdein').item.json.output` |
 
-**System Prompt Summary:**
-> You are a professional LinkedIn content specialist. Create a LinkedIn post that is clear, engaging, mobile-optimized, tailored to the target audience, written in plain text with 1–2 emojis, includes a call to action, and ends with 3–5 relevant hashtags. Max 3,000 characters.
+**System Prompt Instructions:**
+- Role: Professional LinkedIn content specialist
+- Output: Plain text only, no markdown formatting
+- Length: ≤ 3,000 characters
+- Must include: 1–2 emojis, a call to action, 3–5 hashtags
+- Tone: Human, conversational, mobile-optimised
+- Tailored to the `targetAudience` field
 
 ---
 
 ### 7. Facebook Agent
-- **Type:** `agent` (LangChain)
-- **AI Model:** Claude Opus 4.7
-- **Input:** Aggregated article content + target audience
-- **Output field:** `output` → written to `Facebook` column
+| Property | Value |
+|---|---|
+| **Node Type** | `agent` (LangChain, v3.1) |
+| **Model** | Claude Haiku 4.5 |
+| **Output** | `$('Facebook').item.json.output` |
 
-**System Prompt Summary:**
-> You are an expert Facebook content creator. Create a short, attention-grabbing post tailored to the audience with 1–2 emojis, a clear call to action, and 1–3 hashtags. Friendly and conversational tone.
+**System Prompt Instructions:**
+- Role: Expert Facebook content creator
+- Output: Short, attention-grabbing post only
+- Must include: 1–2 emojis, a clear call to action, 1–3 hashtags
+- Tone: Friendly, conversational, mobile-first
+- Spark interaction (likes, comments, shares)
 
 ---
 
 ### 8. Blog Post Agent
-- **Type:** `agent` (LangChain)
-- **AI Model:** Claude Opus 4.7
-- **Input:** Aggregated article content + target audience
-- **Output field:** `output` → written to `Blog` column
+| Property | Value |
+|---|---|
+| **Node Type** | `agent` (LangChain, v3.1) |
+| **Model** | Claude Haiku 4.5 |
+| **Output** | `$json.output` |
 
-**System Prompt Summary:**
-> You are a skilled blog writer. Write a two-paragraph blog article — engaging, coherent, and informative. Professional yet friendly tone. First paragraph introduces the topic; second delivers insights and conclusion.
+**System Prompt Instructions:**
+- Role: Skilled blog writer
+- Output: Exactly two paragraphs
+- Paragraph 1: Introduction — hook the reader, introduce the topic
+- Paragraph 2: Insight + conclusion — deliver value, end with a takeaway
+- Tone: Professional yet friendly
+- Coherent, engaging, and informative for a general audience
 
 ---
 
 ### 9. Update Row in Sheet
-- **Type:** `googleSheets` (update operation)
-- **Matching Column:** `Campaign` (used to find the correct row)
-- **Columns Updated:** `Linkdin`, `Facebook`, `Blog`, `Content Subject`, `Campaign`
-- **Purpose:** Writes all three generated content pieces back into the original spreadsheet row.
+| Property | Value |
+|---|---|
+| **Node Type** | `googleSheets` (v4.7) |
+| **Operation** | Update |
+| **Matching Column** | `Campaign` |
+| **Credential** | Google Sheets OAuth2 |
+
+**Column Mapping:**
+
+| Sheet Column | Value Source |
+|---|---|
+| `Campaign` | `$('Google Sheets Trigger').last().json.Campaign` |
+| `Content Subject` | `$('Google Sheets Trigger').last().json['Content Subject']` |
+| `Linkdin` | `$('Linkdein').item.json.output` |
+| `Facebook` | `$('Facebook').item.json.output` |
+| `Blog` | `$json.output` |
 
 ---
 
 ## Credentials Required
 
-| Credential | Used By |
+| Credential | Node(s) |
 |---|---|
-| Google Sheets Trigger OAuth2 | Google Sheets Trigger |
-| Google Sheets OAuth2 | Update row in sheet |
-| Anthropic API | LinkedIn, Facebook, Blog Post agents |
-| Tavily API Key | Search Web (hardcoded in HTTP body) |
-
-> ⚠️ **Security Note:** The Tavily API key is currently hardcoded in the HTTP Request node body. It is recommended to move it to an n8n credential or environment variable before using in production.
+| **Google Sheets Trigger OAuth2** | Google Sheets Trigger |
+| **Google Sheets OAuth2** | Update row in sheet |
+| **Anthropic API** | LinkedIn Agent, Facebook Agent, Blog Post Agent |
+| **Tavily API Key** | Search Web (currently hardcoded — move to credential) |
 
 ---
 
-## Setup Instructions
+## Setup Guide
 
-1. **Import** the `Social_Media_Content.json` workflow into your n8n instance.
-2. **Connect credentials:**
-   - Google Sheets (OAuth2) for both trigger and update nodes
-   - Anthropic API key for all three AI agent nodes
-   - Update the Tavily API key in the Search Web node (or store it as a credential)
-3. **Prepare your Google Sheet** with the columns: `Campaign`, `Content Subject`, `Target Audience`, `Linkdin`, `Facebook`, `Blog`
-4. **Activate** the workflow using the toggle in n8n.
-5. **Add a new row** to the sheet with a campaign name, content subject, and target audience — the workflow will trigger automatically within a minute.
-
----
-
-## Notes & Recommendations
-
-- The workflow is currently **inactive** — you must manually activate it in n8n.
-- The AI agents run **sequentially** (LinkedIn → Facebook → Blog), so each execution takes 3 API calls to Claude.
-- To reduce Anthropic API costs, consider switching to **Claude Haiku** for faster and cheaper generation, especially for Facebook and Blog posts.
-- The Tavily search is set to `"topic": "news"` — change this to `"general"` if your content subjects are not news-related.
-- Poll interval is set to **every minute**, which may generate excessive trigger checks. Consider changing to `everyHour` or a scheduled time for lower overhead.
-
+1. **Import** `Social_Media_Content.json` into your n8n instance via *Workflows → Import from file*
+2. **Set up credentials:**
+   - Connect a Google account with Sheets access for both the trigger and update nodes
+   - Add your Anthropic API key under *Credentials → Anthropic*
+   - Replace the hardcoded Tavily API key in the Search Web node with your own key
+3. **Prepare your Google Sheet** with these exact column headers:
+   ```
+   Campaign | Content Subject | Target Audience | Linkdin | Facebook | Blog
+   ```
+4. **Activate** the workflow using the toggle in the top-right of the editor
+5. **Add a row** to the sheet — the workflow will trigger within one minute and populate the content columns automatically
