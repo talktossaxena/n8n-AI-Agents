@@ -140,9 +140,9 @@
       "parameters": {
         "model": {
           "__rl": true,
-          "value": "claude-opus-4-7",
+          "value": "claude-haiku-4-5-20251001",
           "mode": "list",
-          "cachedResultName": "Claude Opus 4.7"
+          "cachedResultName": "Claude Haiku 4.5"
         },
         "options": {}
       },
@@ -182,16 +182,16 @@
       "parameters": {
         "model": {
           "__rl": true,
-          "value": "claude-opus-4-7",
+          "value": "claude-haiku-4-5-20251001",
           "mode": "list",
-          "cachedResultName": "Claude Opus 4.7"
+          "cachedResultName": "Claude Haiku 4.5"
         },
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
       "typeVersion": 1.5,
       "position": [
-        1544,
+        1552,
         224
       ],
       "id": "aa9984d7-56ad-4947-8b12-b4b829c00b7a",
@@ -207,16 +207,16 @@
       "parameters": {
         "model": {
           "__rl": true,
-          "value": "claude-opus-4-7",
+          "value": "claude-haiku-4-5-20251001",
           "mode": "list",
-          "cachedResultName": "Claude Opus 4.7"
+          "cachedResultName": "Claude Haiku 4.5"
         },
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
       "typeVersion": 1.5,
       "position": [
-        1896,
+        1904,
         224
       ],
       "id": "fa0cf2c2-1e44-42b7-a215-11d86ae2685b",
@@ -492,7 +492,7 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "0f0c79c5-5cb9-4cba-b38d-93d66a465ea1",
+  "versionId": "fa480abf-a0a0-4931-8de3-bd0d2775767b",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "41557f9e958a88ad95b2b362579809328c565d2487d06025b18278e892d788b9"
