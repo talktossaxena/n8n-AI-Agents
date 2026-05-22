@@ -406,4 +406,5 @@ Merges all split result items into a single JSON object passed to the AI agents.
 4. **Activate** the workflow using the toggle in the top-right of the editor
 5. **Add a row** to the sheet — the workflow will trigger within one minute and populate the content columns automatically
 
-<img width="1018" height="189" alt="image" src="https://github.com/user-attachments/assets/a4ed66d3-c010-4918-a9ba-45bfb1ef2ef4" />
+<img width="1015" height="185" alt="image" src="https://github.com/user-attachments/assets/88121410-53de-40c3-bf7b-d9d59dc45cde" />
+
