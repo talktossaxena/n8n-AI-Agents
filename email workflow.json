@@ -1,0 +1,356 @@
+{
+  "name": "Email and Meeting",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -240,
+        -96
+      ],
+      "id": "83ac17a9-4834-4091-a468-80d3cb751d40",
+      "name": "When chat message received",
+      "webhookId": "089e2a22-e368-4b80-8060-e55766bf67d5"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        296,
+        -96
+      ],
+      "id": "b8a25634-f471-458e-acc7-d1a6cc5a0de1",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "claude-haiku-4-5-20251001",
+          "mode": "list",
+          "cachedResultName": "Claude Haiku 4.5"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.5,
+      "position": [
+        -192,
+        128
+      ],
+      "id": "3ddbd3a1-6994-4bd0-9ad6-bfb316b3b80a",
+      "name": "Anthropic Chat Model",
+      "credentials": {
+        "anthropicApi": {
+          "id": "uulwBpaf6jZ2ekiP",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        -48,
+        128
+      ],
+      "id": "725ddda2-f35c-4bed-b538-0eb6fb1ad843",
+      "name": "Send a message in Gmail",
+      "webhookId": "8f0c61cd-b5a6-429e-a6e8-15671c7945fb",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "4AcBJEcXZVSXO2iq",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "talktossaxena@gmail.com",
+          "mode": "list",
+          "cachedResultName": "talktossaxena@gmail.com"
+        },
+        "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        112,
+        128
+      ],
+      "id": "cd5ecc03-386f-4174-ad4a-077e2328cc4f",
+      "name": "Create an event in Google Calendar",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "RgJ59T3RVeZr2KHg",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 560,
+        "width": 1312,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -352,
+        -192
+      ],
+      "typeVersion": 1,
+      "id": "ffcf598d-0a7c-4228-a1b2-51dcb87f1505",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "resource": "label"
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        272,
+        128
+      ],
+      "id": "dc865270-9c51-4a4a-9d0d-5ffbb215953b",
+      "name": "Get many labels in Gmail",
+      "webhookId": "8f0c61cd-b5a6-429e-a6e8-15671c7945fb",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "4AcBJEcXZVSXO2iq",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "addLabels",
+        "messageId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message_ID', ``, 'string') }}",
+        "labelIds": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Label_Names_or_IDs', ``, 'string') }}"
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        128
+      ],
+      "id": "cc96117c-0efe-4c1b-a159-199f870e54b4",
+      "name": "Add label to message in Gmail",
+      "webhookId": "8f0c61cd-b5a6-429e-a6e8-15671c7945fb",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "4AcBJEcXZVSXO2iq",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 1,
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.2,
+      "position": [
+        576,
+        128
+      ],
+      "id": "ae88cf58-70f0-401a-8275-ed0f76d05c48",
+      "name": "Get many messages in Gmail",
+      "webhookId": "8f0c61cd-b5a6-429e-a6e8-15671c7945fb",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "4AcBJEcXZVSXO2iq",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1ptO2VcUAgoLyLob1Df03wzpWodUWKybc0OXHGNdh4QA",
+          "mode": "list",
+          "cachedResultName": "email details",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ptO2VcUAgoLyLob1Df03wzpWodUWKybc0OXHGNdh4QA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ptO2VcUAgoLyLob1Df03wzpWodUWKybc0OXHGNdh4QA/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email Title": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Email_Title', ``, 'string') }}",
+            "Email Message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Email_Message', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Email Title",
+              "displayName": "Email Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email Message",
+              "displayName": "Email Message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        752,
+        128
+      ],
+      "id": "d3422b29-943c-4c58-b8fb-053faa646b44",
+      "name": "Append row in sheet in Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Dx3SicqfYAQThux9",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create an event in Google Calendar": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many labels in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add label to message in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many messages in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "a797239f-1876-40cf-89d9-2ab233612bea",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "41557f9e958a88ad95b2b362579809328c565d2487d06025b18278e892d788b9"
+  },
+  "id": "xdPXQCIAyUr8t0Gh",
+  "tags": []
+}
