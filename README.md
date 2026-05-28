@@ -817,3 +817,256 @@ Before running this workflow you need:
 
 <img width="533" height="223" alt="image" src="https://github.com/user-attachments/assets/c74b5ca6-c34e-487b-9592-77da5c764690" />
 
+
+# Zabbix — Actions n8n Workflow
+
+## Overview
+
+This workflow provides a **web-based self-service portal** for managing Zabbix monitors. Users access a form via a browser, select the action they want to perform, fill in details, upload a template file, and the workflow automatically routes to the appropriate sub-workflow to create or list monitors in Zabbix.
+
+It supports **6 monitor types** (URL, Port, MySQL, MSSQL, Postgres, Oracle) for adding monitors, and **2 listing actions** (Non-WEB and WEB monitors) — 8 actions in total.
+
+---
+
+## High-Level Flow
+
+```
+Form Trigger (Entry Point)
+        ↓
+    Switch (Route by Action)
+        ↓
+  ┌─────────────────────────────────────────────────────────┐
+  │  ADD Monitors (URL / Port / MySQL / MSSQL / Postgres / Oracle)
+  │        ↓
+  │  Detail Form (App Name, ASK ID, Template File, Email)
+  │        ↓
+  │  Write Template File to Disk
+  │        ↓
+  │  Confirmation Check (Yes/No)
+  │        ↓
+  │  Execute Sub-Workflow (Add Monitors)
+  └─────────────────────────────────────────────────────────┘
+        ↓
+  ┌─────────────────────────────────────────────────────────┐
+  │  LIST Monitors (Non-WEB / WEB)
+  │        ↓
+  │  Detail Form (App Name, Email)
+  │        ↓
+  │  Execute Sub-Workflow (List Monitors)
+  └─────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Node-by-Node Breakdown
+
+### 1. Zabbix — Add / List Monitors *(Form Trigger — Entry Point)*
+
+| Property | Value |
+|---|---|
+| Type | `formTrigger` |
+| Form Title | Zabbix — Add / List Monitors |
+| Path | `/zabbix-monitors` |
+| Authentication | Basic Auth (`n8n basic auth`) |
+| Button Label | Next |
+
+The **entry point** of the entire workflow. Renders a web form with a dropdown menu where the user selects one of 8 actions:
+
+**Add Actions:**
+- Add — URL Availability Monitor
+- Add — Port Availability Monitor
+- Add — MySQL Database Availability Monitor
+- Add — MSSQL Database Availability Monitor
+- Add — Postgres Database Availability Monitor
+- Add — Oracle Database Availability Monitor
+
+**List Actions:**
+- List — Non WEB Monitors for an Application
+- List — WEB Monitors for an Application
+
+The form description also provides download links for Excel templates (URL, Port, Database) that users must populate before uploading.
+
+---
+
+### 2. Switch *(Action Router)*
+
+| Property | Value |
+|---|---|
+| Type | `switch` |
+| Input | `$json['Action to perform']` |
+| Outputs | 8 branches (one per action) |
+
+Routes the workflow to the correct branch based on the action selected in Step 1. Each of the 8 outputs connects to a different form or sub-workflow path.
+
+| Output | Routes To |
+|---|---|
+| 0 | URL Monitors form |
+| 1 | Port Monitors form |
+| 2 | MySQL Monitors form |
+| 3 | MSSQL Monitors form |
+| 4 | Postgres Monitors form |
+| 5 | Oracle Monitors form |
+| 6 | Non WEB Monitors form |
+| 7 | WEB Monitors form |
+
+---
+
+### 3. Monitor Detail Forms *(6 Add Forms + 2 List Forms)*
+
+#### Add Monitor Forms (URL / Port / MySQL / MSSQL / Postgres / Oracle)
+
+Each "Add" action shows a second form collecting the following details:
+
+| Field | Type | Required |
+|---|---|---|
+| Application Name | Text | ✅ |
+| Application Alias Name | Text | ✅ |
+| Application ASK ID | Text | ✅ |
+| Monitor Template File | File upload (.xlsx only) | ✅ |
+| Email ID to send approval link | Text (comma-separated) | ✅ |
+| Are you sure to create monitors? | Radio (Yes / No, default: No) | ✅ |
+
+The form title is dynamically set to the selected action name from Step 1.
+
+#### List Monitor Forms (Non WEB / WEB)
+
+Simpler form with only two fields:
+
+| Field | Type | Required |
+|---|---|---|
+| Application Name | Text | ✅ |
+| Email ID to send items list | Text (comma-separated) | ✅ |
+
+---
+
+### 4. Write Template File to Disk *(Add paths only)*
+
+| Property | Value |
+|---|---|
+| Type | `readWriteFile` |
+| Operation | Write |
+| File Path | `/tmp/workflow-{executionId}-{submittedAt}.xlsx` |
+| Data Source | `Monitor_Template_File` (from form upload) |
+
+After form submission, the uploaded `.xlsx` template file is saved to disk at a unique path using the execution ID and submission timestamp. This file is later consumed by the sub-workflow to read monitor definitions.
+
+One write node exists per monitor type (URL, Port, MySQL, MSSQL, Postgres, Oracle) — 6 total.
+
+---
+
+### 5. Create [Type] Monitors? *(Confirmation Gate)*
+
+| Property | Value |
+|---|---|
+| Type | `switch` |
+| Condition | `Are you sure to create monitors?` == `Yes` |
+
+A safety gate that only proceeds if the user confirmed **"Yes"** in the form. If the user selected "No", the workflow stops here — no monitors are created. This prevents accidental submissions.
+
+One confirmation switch exists per monitor type — 6 total.
+
+---
+
+### 6. Execute Sub-Workflows
+
+#### Add Monitor Sub-Workflows
+
+Each monitor type calls a dedicated sub-workflow to actually create the monitors in Zabbix:
+
+| Node Name | Sub-Workflow Called | Workflow ID |
+|---|---|---|
+| Add URL Monitors | Zabbix — Add URL Monitors | `Q4G8AkGRF55wQbIA` |
+| Add Port Monitors | Zabbix — Add Port Monitors | `aFL7AQzqPtaFqPeZ` |
+| Add MySQL Monitors | Zabbix — Add MySQL Monitors | `q6bomJ7EJhP2sPxx` |
+| Add MSSQL Monitors | Zabbix — Add MSSQL Monitors | `AIBErE1YtLTXMWEu` |
+| Add Postgres Monitors | Zabbix — Add Postgres Monitors | `3oCIzo1VrAd5342E` |
+| Add Oracle Monitors | Zabbix — Add Oracle Monitors | `zZ3Bin1WHzQ1cL7Q` |
+
+#### List Monitor Sub-Workflows
+
+| Node Name | Sub-Workflow Called | Workflow ID |
+|---|---|---|
+| List Non WEB Monitors | Zabbix — List Non WEB Monitors | `8ll20oXUS1mvRiXT` |
+| List WEB Monitors | Zabbix — List WEB Monitors | `171V6VKgPBI2jIYJ` |
+
+All sub-workflows are called with `waitForSubWorkflow: false`, meaning this workflow fires and moves on without waiting for the sub-workflow to finish.
+
+---
+
+## Complete Flow per Action Type
+
+### Adding a Monitor (e.g., URL)
+
+```
+User opens /zabbix-monitors
+        ↓
+Selects "Add - URL Availability Monitor" → clicks Next
+        ↓
+Fills in: App Name, Alias, ASK ID, uploads .xlsx, enters emails
+Selects "Yes" to confirm → clicks Submit
+        ↓
+Uploaded .xlsx file written to /tmp/workflow-{id}.xlsx
+        ↓
+Switch checks: "Yes" → proceeds / "No" → stops
+        ↓
+Calls sub-workflow: "Zabbix - Add URL Monitors"
+```
+
+### Listing Monitors (e.g., WEB)
+
+```
+User opens /zabbix-monitors
+        ↓
+Selects "List - WEB Monitors for an Application" → clicks Next
+        ↓
+Fills in: App Name, Email IDs → clicks Submit
+        ↓
+Calls sub-workflow: "Zabbix - List WEB Monitors"
+```
+
+---
+
+## Credentials Required
+
+| Credential | Used By | Purpose |
+|---|---|---|
+| `n8n basic auth` | Form Trigger | Protects the form with username/password |
+
+---
+
+## Workflow Settings
+
+| Setting | Value |
+|---|---|
+| Status | **Inactive** |
+| Execution Order | v1 |
+
+> ⚠️ The workflow is currently **inactive**. It must be activated before the form URL becomes accessible.
+
+---
+
+## Dependent Sub-Workflows
+
+This workflow acts as an **orchestrator**. It collects user input and delegates actual Zabbix operations to 8 separate sub-workflows. All sub-workflows must exist and be active for this workflow to function correctly.
+
+| Sub-Workflow | Purpose |
+|---|---|
+| Zabbix — Add URL Monitors | Creates URL availability monitors in Zabbix |
+| Zabbix — Add Port Monitors | Creates port availability monitors in Zabbix |
+| Zabbix — Add MySQL Monitors | Creates MySQL DB monitors in Zabbix |
+| Zabbix — Add MSSQL Monitors | Creates MSSQL DB monitors in Zabbix |
+| Zabbix — Add Postgres Monitors | Creates Postgres DB monitors in Zabbix |
+| Zabbix — Add Oracle Monitors | Creates Oracle DB monitors in Zabbix |
+| Zabbix — List Non WEB Monitors | Lists non-web monitors for an application |
+| Zabbix — List WEB Monitors | Lists web monitors for an application |
+
+---
+
+## Notes
+
+- The form is accessible at the path `/zabbix-monitors` and is protected by Basic Auth to prevent unauthorized access.
+- Template files (`.xlsx`) are temporarily stored in `/tmp/` with unique filenames per execution to avoid conflicts.
+- The **"Are you sure?"** confirmation radio (default: No) acts as a safeguard against accidental monitor creation.
+- Emails collected in the forms are passed to sub-workflows, which presumably send approval links or result lists to those addresses.
+- Sub-workflows run asynchronously (`waitForSubWorkflow: false`), so the form returns immediately without waiting for Zabbix operations to complete.
+
