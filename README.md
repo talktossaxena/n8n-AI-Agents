@@ -1069,4 +1069,8 @@ This workflow acts as an **orchestrator**. It collects user input and delegates 
 - The **"Are you sure?"** confirmation radio (default: No) acts as a safeguard against accidental monitor creation.
 - Emails collected in the forms are passed to sub-workflows, which presumably send approval links or result lists to those addresses.
 - Sub-workflows run asynchronously (`waitForSubWorkflow: false`), so the form returns immediately without waiting for Zabbix operations to complete.
+[database.xlsx](https://github.com/user-attachments/files/28330258/database.xlsx)
+[url.xlsx](https://github.com/user-attachments/files/28330256/url.xlsx)
+[port.xlsx](https://github.com/user-attachments/files/28330254/port.xlsx)
 
+<img width="394" height="423" alt="image" src="https://github.com/user-attachments/assets/ed669dd2-a342-4dde-9231-a80caf94312d" />
