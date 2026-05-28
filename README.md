@@ -813,8 +813,6 @@ Before running this workflow you need:
 
 ## Notes
 
-- The workflow is set to **active**, meaning it runs automatically in production when a Telegram message is received.
-- Only **one Telegram Trigger per bot** is allowed at a time (Telegram API limitation).
-- The AI Agent uses `gpt-5-mini` — you can swap this for `gpt-4o` or other models in the OpenAI Chat Model node for different performance/cost trade-offs.
-- To add memory, tools, or custom instructions to the AI Agent, connect additional sub-nodes (e.g. Memory, Tool nodes) to the AI Agent node.
+- [how to access n8n on local machine from internet.docx](https://github.com/user-attachments/files/28329874/how.to.access.n8n.on.local.machine.from.internet.docx)
 
+<img width="805" height="314" alt="image" src="https://github.com/user-attachments/assets/ad1983d3-f1b2-481b-9eb2-4115a3e783b3" />
