@@ -696,3 +696,125 @@ Log my last email to the sheet
 | *"Email Sarah and create a meeting for tomorrow"* | Send message + Create event |
 
 <img width="675" height="250" alt="image" src="https://github.com/user-attachments/assets/4f0a43ac-37d3-40a6-a6f3-ba60de6369be" />
+
+
+# Telegram Integration with AI Agent — n8n Workflow
+
+## Overview
+
+This workflow connects a **Telegram Bot** to an **AI Agent powered by OpenAI**, allowing users to send messages to the bot and receive intelligent AI-generated replies automatically.
+
+```
+Telegram Trigger → AI Agent → Send a text message
+                      ↑
+               OpenAI Chat Model
+```
+
+---
+
+## Workflow Nodes
+
+### 1. Telegram Trigger
+| Property | Value |
+|---|---|
+| Type | `telegramTrigger` |
+| Trigger On | `message` |
+| Credential | Telegram account |
+
+Listens for incoming messages sent to your Telegram bot. Every time a user sends a message, this node fires and passes the message data to the next node.
+
+**Output data includes:**
+- `message.text` — the user's message text
+- `message.chat.id` — the chat ID used to send the reply back
+
+---
+
+### 2. AI Agent
+| Property | Value |
+|---|---|
+| Type | `@n8n/n8n-nodes-langchain.agent` |
+| Prompt | `{{ $json.message.text }}` |
+| Language Model | OpenAI Chat Model (connected below) |
+
+Takes the user's message text from the Telegram Trigger and sends it to the AI Agent. The agent processes the input using the connected OpenAI model and generates a response.
+
+---
+
+### 3. OpenAI Chat Model
+| Property | Value |
+|---|---|
+| Type | `lmChatOpenAi` |
+| Model | `gpt-5-mini` |
+| Credential | OpenAI account |
+
+The language model powering the AI Agent. Connected to the AI Agent node as a sub-node (`ai_languageModel`). Processes the prompt and returns a text response.
+
+---
+
+### 4. Send a Text Message
+| Property | Value |
+|---|---|
+| Type | `telegram` |
+| Chat ID | `{{ $('Telegram Trigger').item.json.message.chat.id }}` |
+| Text | `{{ $json.output }}` |
+| Credential | Telegram account |
+
+Sends the AI Agent's response back to the user on Telegram. Uses the `chat.id` from the original message to reply to the correct conversation.
+
+---
+
+## Data Flow
+
+```
+User sends message on Telegram
+        ↓
+Telegram Trigger captures message.text
+        ↓
+AI Agent receives text as prompt
+        ↓
+OpenAI Chat Model (gpt-5-mini) processes it
+        ↓
+AI Agent outputs response in $json.output
+        ↓
+Send a Text Message → replies to user on Telegram
+```
+
+---
+
+## Credentials Required
+
+| Credential | Used By | Purpose |
+|---|---|---|
+| **Telegram account** | Telegram Trigger + Send a text message | Bot token to receive & send messages |
+| **OpenAI account** | OpenAI Chat Model | API key to call GPT model |
+
+---
+
+## Setup Requirements
+
+Before running this workflow you need:
+
+1. **A Telegram Bot Token** — create a bot via [@BotFather](https://t.me/botfather) on Telegram
+2. **An OpenAI API Key** — get one from [platform.openai.com](https://platform.openai.com)
+3. **A public HTTPS webhook URL** — required by Telegram to deliver messages to n8n (e.g. via Cloudflare Tunnel or ngrok)
+4. Set `WEBHOOK_URL` environment variable in n8n to your public HTTPS URL before starting
+
+---
+
+## Workflow Settings
+
+| Setting | Value |
+|---|---|
+| Status | Active |
+| Execution Order | v1 |
+| Binary Mode | separate |
+
+---
+
+## Notes
+
+- The workflow is set to **active**, meaning it runs automatically in production when a Telegram message is received.
+- Only **one Telegram Trigger per bot** is allowed at a time (Telegram API limitation).
+- The AI Agent uses `gpt-5-mini` — you can swap this for `gpt-4o` or other models in the OpenAI Chat Model node for different performance/cost trade-offs.
+- To add memory, tools, or custom instructions to the AI Agent, connect additional sub-nodes (e.g. Memory, Tool nodes) to the AI Agent node.
+
